@@ -1,0 +1,417 @@
+/*EJERCICIO 3: Comprueba si dos palabras son iguales
+ * Autor: Mario Antonio López Ruiz ~ 45109755q
+ * 1ºD
+ */
+
+#include <iostream>
+using namespace std;
+
+
+class SecuenciaCaracteres{
+	private:
+	   static const int TAMANIO = 25e+5;
+	   char vector_privado[TAMANIO];
+	   int total_utilizados;
+	   
+	   void IntercambiaComponentes_en_Posiciones(int pos_izda, int pos_dcha){
+		  char intercambia;
+
+		  intercambia = vector_privado[pos_izda];
+		  vector_privado[pos_izda] = vector_privado[pos_dcha];
+		  vector_privado[pos_dcha] = intercambia;
+	   }
+	public:
+	   SecuenciaCaracteres()
+		  :total_utilizados(0) {
+	   }
+
+
+	   int TotalUtilizados(){
+		  return total_utilizados;
+	   }
+	   
+	   int Capacidad(){
+		  return TAMANIO;
+	   }
+	   
+	   void EliminaTodos(){
+		  total_utilizados = 0;
+	   }
+	   
+	   void Aniade(char nuevo){
+		  if (total_utilizados < TAMANIO){
+		     vector_privado[total_utilizados] = nuevo;
+		     total_utilizados++;
+		  }
+	   }
+	   
+	   void Modifica(int posicion, char nuevo){
+		  if (posicion >= 0 && posicion < total_utilizados)
+		     vector_privado[posicion] = nuevo;
+	   }
+
+	   char Elemento(int indice){
+		  return vector_privado[indice];
+	   }
+	   
+	   string ToString(){
+		  // Si el número de caracteres en memoria es muy grande,
+		  // es mucho más eficiente reservar memoria previamente
+		  // y usar push_back
+
+		  string cadena;
+
+		  cadena.reserve(total_utilizados);
+
+		  for (int i=0; i < total_utilizados; i++)
+		     cadena.push_back(vector_privado[i]);
+		     //cadena = cadena + vector_privado[i]  <- Evitarlo. Muy ineficiente para tamaños grandes;
+
+		  return cadena;
+	   }
+
+		void EliminaBloque(int izda, int dcha){
+			for(int i=izda; i <= dcha; i++){
+				Elimina(izda);
+			}
+		}
+
+
+
+
+		void EliminaOcurrencias(char a_borrar){
+			//Las posiciones que se vean modificadas van a tener que moverse una sola vez
+			int escribir = 0, leer = 0;
+			int decremento_total = 0;
+
+			for(int i=0; i < total_utilizados; i++){
+				if( i == escribir ){
+					if(vector_privado[i] != a_borrar)
+						escribir++;
+					else
+						decremento_total++;
+					
+				}					
+				else{//vector_privado[i] == a_borrar
+					if(vector_privado[i] != a_borrar){//Si es el caracter, no hago el cambio				
+						vector_privado[escribir] = vector_privado[i];
+						escribir++;
+					}				
+					else
+						decremento_total++;
+				}
+				leer++;
+			}
+			total_utilizados -= decremento_total; //Actualizo el vector
+		}
+
+	   int PrimeraOcurrenciaEntre (int pos_izda, int pos_dcha, char buscado){
+		  int i = pos_izda;
+		  bool encontrado = false;
+
+		  while (i <= pos_dcha  &&  !encontrado)
+		     if (vector_privado[i] == buscado)
+		        encontrado = true;
+		     else
+		        i++;
+
+		  if (encontrado)
+		     return i;
+		  else
+		     return -1;
+	   }
+	   
+	   int PrimeraOcurrencia (char buscado){
+		  return PrimeraOcurrenciaEntre (0, total_utilizados - 1, buscado);
+	   }
+	  
+	  
+	   /////////////////////////////////////////////////////////////
+	   // Búsquedas
+	   
+	   // Precond: 0 <= izda <= dcha < total_utilizados
+	   int PosicionMinimoEntre(int izda, int dcha){
+		  int posicion_minimo = -1;
+		  char minimo;
+
+		  minimo = vector_privado[izda];
+		  posicion_minimo = izda;
+
+		  for (int i = izda+1 ; i <= dcha ; i++)
+		     if (vector_privado[i] < minimo){
+		        minimo = vector_privado[i];
+		        posicion_minimo = i;
+		     }
+
+		  return posicion_minimo;
+	   }
+	   
+	   int PosicionMinimo(){
+		  return PosicionMinimoEntre(0, total_utilizados - 1);
+	   }
+	   
+	   int BusquedaBinaria (char buscado){
+		  int izda, dcha, centro;
+		  bool encontrado = false;
+
+		  izda = 0;
+		  dcha = total_utilizados - 1;
+		  centro = (izda + dcha) / 2;
+
+		  while (izda <= dcha  &&  !encontrado){
+		     if (vector_privado[centro] == buscado)
+		        encontrado = true;
+		     else if (buscado < vector_privado[centro])
+		        dcha = centro - 1;
+		     else
+		        izda = centro + 1;
+
+		     centro = (izda + dcha) / 2;
+		  }
+
+		  if (encontrado)
+		     return centro;
+		  else
+		     return -1;
+	   }
+	   
+	   
+	   /////////////////////////////////////////////////////////////
+	   // Recorridos que modifican las componentes
+	   
+	   // Inserta un valor en la posición especificada
+	   void Inserta(int pos_insercion, char valor_nuevo){
+		  if (total_utilizados < TAMANIO  &&  pos_insercion >= 0    
+		     &&  pos_insercion <= total_utilizados){
+
+		     for (int i = total_utilizados ; i > pos_insercion ; i--)
+		        vector_privado[i] = vector_privado[i-1];
+
+		     vector_privado[pos_insercion] = valor_nuevo;
+		     total_utilizados++;
+		  }
+	   }
+	   
+	   // Elimina una componente, dada por su posición
+	   void Elimina (int posicion){
+		  if (posicion >= 0 && posicion < total_utilizados){
+		     int tope = total_utilizados-1;
+
+		     for (int i = posicion ; i < tope ; i++)
+		        vector_privado[i] = vector_privado[i+1];
+
+		     total_utilizados--;
+		  }
+	   }
+	   
+	   
+	   /////////////////////////////////////////////////////////////
+	   // Algoritmos de ordenación
+	   
+	   void Ordena_por_Seleccion(){
+		  int pos_min;
+
+		  for (int izda = 0 ; izda < total_utilizados ; izda++){
+		     pos_min = PosicionMinimoEntre(izda, total_utilizados - 1);
+		     IntercambiaComponentes_en_Posiciones(izda, pos_min);
+		  }
+	   }
+	   
+	   /*
+	   void Ordena_por_Insercion(){
+		  int izda, i;
+		  char a_desplazar;
+
+		  for (izda=1; izda < total_utilizados; izda++){
+		     a_desplazar = vector_privado[izda];
+
+		     for (i=izda; i > 0 && a_desplazar < vector_privado[i-1]; i--)
+		        vector_privado[i] = vector_privado[i-1];
+
+		     vector_privado[i] = a_desplazar;
+		  }
+	   }
+	   
+	   // La siguiente versión de Ordena_por_Insercion reutiliza el método 
+	   // InsertaOrdenadamente
+	   */
+	   
+	   void InsertaOrdenadamente(char valor_nuevo){
+		    int i;
+
+		    if (total_utilizados > TAMANIO){
+		       for (i=total_utilizados; i>0 && valor_nuevo < vector_privado[i-1]; i--)
+		            vector_privado[i] = vector_privado[i-1];
+
+		       vector_privado[i] = valor_nuevo;
+		       total_utilizados++;
+		    }
+	   }
+	   
+	   
+	   void Ordena_por_Insercion (){
+		  for (int izda=1; izda < total_utilizados; izda++)
+		     InsertaOrdenadamente(vector_privado[izda]);         
+	   }
+	   
+	   
+	   void Ordena_por_Burbuja(){
+		  int izda, i;
+
+		  for (izda = 0; izda < total_utilizados; izda++)
+		    for (i = total_utilizados-1 ; i > izda ; i--)
+		      if (vector_privado[i] < vector_privado[i-1])
+		         IntercambiaComponentes_en_Posiciones(i, i-1);
+	   }
+	   
+	   void Ordena_por_BurbujaMejorado(){
+		  int izda, i;
+		  bool cambio;
+
+		  cambio= true;
+
+		  for (izda=0; izda < total_utilizados && cambio; izda++){
+		    cambio=false;
+
+		    for (i=total_utilizados-1 ; i>izda ; i--)
+		      if (vector_privado[i] < vector_privado[i-1]){
+		         IntercambiaComponentes_en_Posiciones(i, i-1);
+		         cambio=true;
+		      }
+		  }
+	   }
+
+		//MÉTODO EJERCICIO
+		int CuentaOcurrencias(char caracter){
+			int ocurrencias = 0;
+
+			for(int i=0; i < total_utilizados; i++)
+				if(vector_privado[i] == caracter)
+					ocurrencias++;
+
+			return ocurrencias;
+		}
+};
+
+
+int main(){
+	const char CENTINELA = '#';
+	SecuenciaCaracteres una_palabra, otra_palabra;
+
+	char entrada;
+	int util1, util2, util_procesadas = 0;
+	bool iguales = false, existe = false;
+	char procesadas[50]; 
+	int apariciones1 = 0, apariciones2 = 0, i, j;
+	int cont1 = 0, cont2 = 0;
+
+	cout << "\nIntroduzca una palabra (# para acabar): ";
+		
+	cin >> entrada;
+	while (entrada != CENTINELA){
+		una_palabra.Aniade(entrada);
+		cin >> entrada;
+	}
+
+	cout << "\nIntroduzca otra palabra (# para acabar): ";
+
+	cin >> entrada;
+	while (entrada != CENTINELA){
+		otra_palabra.Aniade(entrada);		
+		cin >> entrada;
+		
+	}
+	
+	
+	/** <- PARA PROBAR CON EL EJEMPLO DEL ENUNCIADO ->
+	una_palabra.Aniade('t');
+	una_palabra.Aniade('o');
+	una_palabra.Aniade('t');
+	una_palabra.Aniade('a');
+	una_palabra.Aniade('l');
+	una_palabra.Aniade('m');
+	una_palabra.Aniade('e');
+	una_palabra.Aniade('n');
+	una_palabra.Aniade('t');
+	una_palabra.Aniade('e');
+
+	otra_palabra.Aniade('t');
+	otra_palabra.Aniade('t');
+	otra_palabra.Aniade('a');
+	otra_palabra.Aniade('l');
+	otra_palabra.Aniade('o');
+	otra_palabra.Aniade('m');
+	otra_palabra.Aniade('n');
+	otra_palabra.Aniade('t');
+	otra_palabra.Aniade('e');
+	otra_palabra.Aniade('e');
+	**/
+
+	util1 = una_palabra.TotalUtilizados();
+	util2 = otra_palabra.TotalUtilizados();
+
+	//Compruebo si coinciden primera y ultima letra
+	if( (una_palabra.Elemento(0) == otra_palabra.Elemento(0)) && (una_palabra.Elemento(util1-1) == otra_palabra.Elemento(util2-1) ) )
+		iguales = true;
+
+	//Si coinciden comparo el resto
+	//procesadas[util_procesadas] = una_palabra.Elemento(0);
+	//util_procesadas++; //1
+
+	if(iguales){
+		//Añado todas las letras a un vector de procesadas
+		for(i=0; i < util1; i++){//Si son similares tendrán la misma longuitud
+			/**for(j = 0; j < util_procesadas && !existe; j++){
+				if(procesadas[j] == una_palabra.Elemento(i))
+					existe = true;
+				else
+					existe = false;
+				cout << procesadas[j] << endl;
+			}			
+			**/
+			//Recorro el vector de procesados
+			j = util_procesadas;
+			while(j != 0 && !existe){
+				if(procesadas[j-1] == una_palabra.Elemento(i))
+					existe = true;
+				j--;
+			}
+			
+			//Si no existe en procesadas, la añado
+			if(existe == false){//|| util_procesadas == 0){
+				procesadas[util_procesadas] = una_palabra.Elemento(i);
+				util_procesadas++;
+			}else{
+				existe = false;//reinicio
+			}
+		}	
+
+		/**cout << "Procesadas: " ;
+		for(int k= 0; k < util_procesadas; k++)
+			cout << procesadas[k];
+		cout << endl;**/
+
+		//Cuento ocurrencias en cada palabra
+		for(i = 0; i < util_procesadas; i++){
+			cont1 = 0;
+			cont2 = 0;
+			
+			//primera palabra
+			cont1 = una_palabra.CuentaOcurrencias(procesadas[i]);
+			//segunda palabra
+			cont2 = otra_palabra.CuentaOcurrencias(procesadas[i]);
+
+			if(cont1 != cont2)
+				iguales = false;
+
+		}
+	}
+
+
+	if(iguales)
+		cout << "\nLas palabras son iguales. " << endl;
+	else
+		cout << "\nLas palabras son distintas. " << endl;
+	
+	
+}
